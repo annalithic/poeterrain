@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using POESharp;
 using UnityEditor;
+using System.IO;
 
 [ExecuteInEditMode]
 public class ArmImportComponent : MonoBehaviour {
@@ -28,17 +29,9 @@ public class ArmImportComponent : MonoBehaviour {
             Import(path);
             //Import(@"F:\Extracted\PathOfExile\3.17.Siege\Camp\Rooms\camp.arm");
         }
-        if(createMat) {
-            path = path.Trim('\"');
-            createMat = false;
-            CreateMaterials(path);
-            //CreateMaterials(@"F:\Extracted\PathOfExile\3.17.Siege\Camp\Rooms\camp.arm");
-        }
     }
 
-    void CreateMaterials(string path) {
-        Arm arm = new Arm(path);
-        AssetDatabase.StartAssetEditing();
+    void CreateMaterials(Arm arm) {
         Material[] mats = new Material[arm.entries.Length];
         for (int i = 0; i < mats.Length; i++) {
             Material mat = Resources.Load<Material>(arm.entries[i].Replace('/', '_'));
@@ -50,13 +43,33 @@ public class ArmImportComponent : MonoBehaviour {
                 AssetDatabase.CreateAsset(mat, $"Assets/Resources/{arm.entries[i].Replace('/', '_')}.mat");
             }
         }
-        AssetDatabase.StopAssetEditing();
     }
 
     void Import(string path) {
+        if (!path.EndsWith(".arm")) {
+            List<string> arms = new List<string>();
+            foreach(string arm in Directory.EnumerateFiles(path, "*.arm", SearchOption.AllDirectories)) {
+                arms.Add(arm);
+            }
+            arms.Sort();
+            
+            int offset = 0;
+            foreach(string arm in arms) {
+                Debug.Log(arm.Substring(path.Length + 1));
+                offset += ImportRoom(arm, new Vector3(offset, 0, 0), arm.Substring(path.Length + 1).Replace('\\', '_')) + 3;
+            }
+        } else {
+            ImportRoom(path);
+        }
+    }
+
+    void ImportRoom(string path) { ImportRoom(path, Vector3.zero); }
+    int ImportRoom(string path, Vector3 offset, string name = "") {
 
 
         Arm arm = new Arm(path);
+
+        CreateMaterials(arm);
 
         Material[] mats = new Material[arm.entries.Length + 1];
         mats[0] = matPrefab;
@@ -67,22 +80,29 @@ public class ArmImportComponent : MonoBehaviour {
             } else Debug.Log("ERROR " + arm.entries[i - 1]);
         }
 
-        Transform root = new GameObject(arm.name).transform;
+        if (name == "") name = Path.GetFileNameWithoutExtension(path);
+        Transform root = new GameObject(name + (arm.name != "" ? " (" + arm.name + ")" : "")).transform;
+        root.position = offset;
 
 
         Transform tileRoot = new GameObject("tiles").transform;
-        tileRoot.SetParent(root);
+        tileRoot.SetParent(root, false);
 
         for(int y = 0; y < arm.kEntries.GetLength(1); y++) {
             for (int x = 0; x < arm.kEntries.GetLength(0); x++) {
                 if(arm.kEntries[x,y].type == Arm.KEntry.Type.k) {
                     Arm.KEntry e = arm.kEntries[x, y];
                     Transform obj = Instantiate(tilePrefab, tileRoot).transform;
-                    obj.position = new Vector3(x* size, 0, y* size);
-                    if (e.origin == 1 || e.origin == 2) obj.position += new Vector3((e.sizeX - 1) * size * -1, 0, 0);
-                    if (e.origin == 2 || e.origin == 3) obj.position += new Vector3(0, 0, (e.sizeY - 1) * size * -1);
+                    obj.localPosition = new Vector3(x* size, 0, y* size);
+                    if (e.origin == 1 || e.origin == 2) obj.localPosition += new Vector3((e.sizeX - 1) * size * -1, 0, 0);
+                    if (e.origin == 2 || e.origin == 3) obj.localPosition += new Vector3(0, 0, (e.sizeY - 1) * size * -1);
 
-                    Mesh m = CreateMesh(e);
+                    Mesh m = Resources.Load<Mesh>(e.MeshDescription());
+                    if(m == null) {
+                        m = CreateMesh(e);
+                        AssetDatabase.CreateAsset(m, "Assets/Resources/" + e.MeshDescription() + ".mesh");
+                    }
+                    
                     obj.GetComponent<MeshFilter>().sharedMesh = m;
 
                     
@@ -135,21 +155,21 @@ public class ArmImportComponent : MonoBehaviour {
                 else if(arm.kEntries[x, y].type == Arm.KEntry.Type.s || arm.kEntries[x, y].type == Arm.KEntry.Type.f) {
                     Arm.KEntry e = arm.kEntries[x, y];
                     Transform obj = Instantiate(tilePrefab, tileRoot).transform;
-                    obj.position = new Vector3(x * size, 0, y * size);
+                    obj.localPosition = new Vector3(x * size, 0, y * size);
                     obj.localScale = Vector3.one * 3;
                     obj.name = arm.kEntries[x, y].type.ToString();
-                    if (e.origin == 1 || e.origin == 2) obj.position += new Vector3((e.sizeX - 1) * size * -1, 0, 0);
-                    if (e.origin == 2 || e.origin == 3) obj.position += new Vector3(0, 0, (e.sizeY - 1) * size * -1);
+                    if (e.origin == 1 || e.origin == 2) obj.localPosition += new Vector3((e.sizeX - 1) * size * -1, 0, 0);
+                    if (e.origin == 2 || e.origin == 3) obj.localPosition += new Vector3(0, 0, (e.sizeY - 1) * size * -1);
                 }
             }
         }
         
         Transform doodadRoot = new GameObject("doodads").transform;
-        doodadRoot.SetParent(root);
-
+        doodadRoot.SetParent(root, false);
+        /*
         foreach (Arm.Doodad doodad in arm.doodads) {
             Transform obj = Instantiate(doodadPrefab, doodadRoot).transform;
-            obj.position = new Vector3(doodad.x, doodad.z, doodad.y);
+            obj.localPosition = new Vector3(doodad.x, doodad.z, doodad.y);
             obj.name = doodad.artFile;
         }
 
@@ -158,10 +178,11 @@ public class ArmImportComponent : MonoBehaviour {
             POESharp.Util.WordReader r = new POESharp.Util.WordReader(line.Split(' '));
             int x = r.ReadInt(); int y = r.ReadInt(); float z = r.ReadFloat(); string name = r.ReadString();
             Transform warp = Instantiate(warpPrefab, root).transform;
-            warp.position = new Vector3(x, 3, y);
+            warp.localPosition = new Vector3(x, 3, y);
             warp.name = name;
         }
-        
+        */
+        return arm.kEntry.sizeX * 3;
     }
 
     Mesh CreateMesh(Arm.KEntry e) {
@@ -204,10 +225,10 @@ public class ArmImportComponent : MonoBehaviour {
 
             new Vector3(midX, 0, midY),
 
-            new Vector3(0.5f, 0.005f, 0.5f),
-            new Vector3(x - 0.5f, 0.005f, 0.5f),
-            new Vector3(x - 0.5f, 0.005f, y -0.5f),
-            new Vector3(0.5f, 0.005f, y - 0.5f),
+            new Vector3(0.5f, 0.01f, 0.5f),
+            new Vector3(x - 0.5f, 0.01f, 0.5f),
+            new Vector3(x - 0.5f, 0.01f, y -0.5f),
+            new Vector3(0.5f, 0.01f, y - 0.5f),
 
         };
 

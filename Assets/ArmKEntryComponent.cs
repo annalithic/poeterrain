@@ -23,10 +23,10 @@ public class ArmKEntryComponent : MonoBehaviour
     public string groundTypeDownRight;
     public string groundTypeUpRight;
     public string groundTypeUpLeft;
-    public int unk9;
-    public int unk10;
-    public int unk11;
-    public int unk12;
+    public int heightDownLeft;
+    public int heightDownRight;
+    public int heightUpRight;
+    public int heightUpLeft;
     public string feature;
     public int origin;
 
@@ -49,10 +49,10 @@ public class ArmKEntryComponent : MonoBehaviour
         groundTypeDownRight = GetName(k.groundTypeDownRight, names);
         groundTypeUpRight = GetName(k.groundTypeUpRight, names);
         groundTypeUpLeft = GetName(k.groundTypeUpLeft, names);
-        unk9 = k.unk9;
-        unk10 = k.unk10;
-        unk11 = k.unk11;
-        unk12 = k.unk12;
+        heightDownLeft = k.heightDownLeft;
+        heightDownRight = k.heightDownRight;
+        heightUpRight = k.heightUpRight;
+        heightUpLeft = k.heightUpLeft;
         feature = GetName(k.feature, names);
         origin = k.origin;
     }

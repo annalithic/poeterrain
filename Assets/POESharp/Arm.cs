@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using POESharp.Util;
 namespace POESharp {
@@ -14,12 +15,14 @@ namespace POESharp {
         public KEntry kEntry;
 
         public string[] apaEntries;
-        public string[] unkEntALines;
-        public string[] unkEntBLines;
-        public string[] unkEntCLines;
-        public string[] unkEntDLines;
-        public string[] unkEntELines;
-        public string[] unkEntFLines;
+
+        public static Dictionary<int, int> versionEntityCounts = new Dictionary<int, int>() {
+            {14, 9 },  {18, 9},  {19, 9},
+            {20, 10 }, {21, 10}, {22, 10}, 
+            {26, 5},   {27, 5 }, {28, 5 }, 
+            {29, 6},   {30, 6 }, {31, 6},
+        };
+        public string[][] entityLines;
 
         //public string[] kLines;
         public KEntry[,] kEntries;
@@ -30,33 +33,40 @@ namespace POESharp {
 
         public Arm(string path) {
             using (TextReader r = new StreamReader(File.OpenRead(path))) {
+
                 version = int.Parse(r.ReadLine().Substring(8));
+
                 entries = new string[r.ReadLineInt()];
                 for (int i = 0; i < entries.Length; i++) entries[i] = r.ReadLineString();
+
                 r.ReadLineInt(out size1x, out size1y);
                 r.ReadLineInt(out apax, out apay);
+
                 name = r.ReadLineString();
-                r.ReadLineInt(out bepax, out bepay);
-                kEntry = new KEntry(new WordReader(r.ReadLine().Split(' ')));
+
+                if (version > 14) r.ReadLineInt(out bepax, out bepay);
+                else bepax = int.Parse(r.ReadLine());
+
+                kEntry = new KEntry(new WordReader(r.ReadLine().Split(' ')), version);
+
                 apaEntries = new string[(apax + apay) * 2];
                 for (int i = 0; i < apaEntries.Length; i++) apaEntries[i] = r.ReadLine();
 
-                unkEntALines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntALines.Length; i++) unkEntALines[i] = r.ReadLine();
-                unkEntBLines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntBLines.Length; i++) unkEntBLines[i] = r.ReadLine();
-                unkEntCLines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntCLines.Length; i++) unkEntCLines[i] = r.ReadLine();
-                unkEntDLines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntDLines.Length; i++) unkEntDLines[i] = r.ReadLine();
-                unkEntELines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntELines.Length; i++) unkEntELines[i] = r.ReadLine();
-                unkEntFLines = new string[r.ReadLineInt()]; for (int i = 0; i < unkEntFLines.Length; i++) unkEntFLines[i] = r.ReadLine();
+                entityLines = new string[versionEntityCounts[version]][];
+                for(int entityType = 0; entityType < versionEntityCounts[version]; entityType++) {
+                    entityLines[entityType] = new string[r.ReadLineInt()]; 
+                    for (int i = 0; i < entityLines[entityType].Length; i++) entityLines[entityType][i] = r.ReadLine();
+                }
 
                 kEntries = new KEntry[kEntry.sizeX, kEntry.sizeY];
                 for (int y = 0; y < kEntry.sizeY; y++) {
                     WordReader w = new WordReader(r.ReadLine().Split(' '));
                     for(int x = 0; x < kEntry.sizeX; x++) {
-                        kEntries[x, y] = new KEntry(w);
+                        kEntries[x, y] = new KEntry(w, version);
                     }
                 }
 
-                doodads = new Doodad[r.ReadLineInt()]; for (int i = 0; i < doodads.Length; i++) doodads[i] = new Doodad(r.ReadLine().Split(' '));
+                //doodads = new Doodad[r.ReadLineInt()]; for (int i = 0; i < doodads.Length; i++) doodads[i] = new Doodad(r.ReadLine().Split(' '));
             }
         }
 
@@ -90,10 +100,10 @@ namespace POESharp {
             public int groundTypeDownRight;
             public int groundTypeUpRight;
             public int groundTypeUpLeft;
-            public int unk9;
-            public int unk10;
-            public int unk11;
-            public int unk12;
+            public int heightDownLeft;
+            public int heightDownRight;
+            public int heightUpRight;
+            public int heightUpLeft;
             public int feature;
             public int origin;
 
@@ -101,7 +111,7 @@ namespace POESharp {
 
             //public int[] values;
 
-            public KEntry(WordReader r) {
+            public KEntry(WordReader r, int version) {
                 type = (Type)System.Enum.Parse(typeof(Type), r.ReadString(false));
                 if (type == Type.k) {
                     sizeX = r.ReadInt();
@@ -123,17 +133,21 @@ namespace POESharp {
                     groundTypeDownRight = r.ReadInt();
                     groundTypeUpRight = r.ReadInt();
                     groundTypeUpLeft = r.ReadInt();
-                    unk9 = r.ReadInt();
-                    unk10 = r.ReadInt();
-                    unk11 = r.ReadInt();
-                    unk12 = r.ReadInt();
+                    heightDownLeft = r.ReadInt();
+                    heightDownRight = r.ReadInt();
+                    heightUpRight = r.ReadInt();
+                    heightUpLeft = r.ReadInt();
                     feature = r.ReadInt();
-                    origin = r.ReadInt();
+                    if(version > 18) origin = r.ReadInt();
                     //values = new int[24];
                     //for (int i = 0; i < values.Length; i++) values[i] = r.ReadInt();
                 } else if (type == Type.f) {
                     feature = r.ReadInt();
                 }
+            }
+
+            public string MeshDescription() {
+                return $"{sizeX}_{sizeY}_{edgeLengthDown}_{edgeLengthRight}_{edgeLengthUp}_{edgeLengthLeft}";
             }
 
         }
