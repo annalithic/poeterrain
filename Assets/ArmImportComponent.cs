@@ -83,6 +83,7 @@ public class ArmImportComponent : MonoBehaviour {
         if (name == "") name = Path.GetFileNameWithoutExtension(path);
         Transform root = new GameObject(name + (arm.name != "" ? " (" + arm.name + ")" : "")).transform;
         root.position = offset;
+        root.gameObject.AddComponent<ArmComponent>().SetData(arm);
 
 
         Transform tileRoot = new GameObject("tiles").transform;
@@ -166,13 +167,14 @@ public class ArmImportComponent : MonoBehaviour {
         
         Transform doodadRoot = new GameObject("doodads").transform;
         doodadRoot.SetParent(root, false);
+            
         /*
         foreach (Arm.Doodad doodad in arm.doodads) {
             Transform obj = Instantiate(doodadPrefab, doodadRoot).transform;
             obj.localPosition = new Vector3(doodad.x, doodad.z, doodad.y);
             obj.name = doodad.artFile;
         }
-
+        
         //warp points
         foreach(string line in arm.unkEntDLines) {
             POESharp.Util.WordReader r = new POESharp.Util.WordReader(line.Split(' '));
