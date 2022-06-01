@@ -7,11 +7,34 @@ namespace PoeSharpTests {
         static void Main(string[] args) {
             //Arm arm = new Arm(@"F:\Extracted\PathOfExile\3.17.Siege\Metadata\Terrain\Dungeon\Rooms\Unique\exit_2b.arm");
             //Console.WriteLine(arm.name);
-            foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.17.Siege\Metadata\Terrain\", "*.*gr", SearchOption.AllDirectories)) {
-                //Console.Write(Path.GetFileName(path));
-                Graph g = new Graph(path);
-                Console.WriteLine($"{g.version} {path}");
+            //foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.17.Siege\Metadata\Terrain\", "*.*gr", SearchOption.AllDirectories)) {
+            //Console.Write(Path.GetFileName(path));
+            //    Graph g = new Graph(path);
+            //    Console.WriteLine($"{g.version} {path}");
+            //}
+
+            //Smd smd = new Smd(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\GoddessOfMalaise\rig_5529a689.smd");
+            //Console.WriteLine(smd.Print());
+
+            int debug = 0;
+            string folder = @"E:\Extracted\PathOfExile\3.18.Sentinel\";
+            foreach (string path in Directory.EnumerateFiles(folder, "*.smd", SearchOption.AllDirectories)) {
+                string relative = path.Substring(folder.Length);
+                string meshPath = Path.Combine(relative.Replace(".smd", ".mesh"));
+                Console.WriteLine(meshPath);
+                debug++; if (debug > 100) break;
             }
+
+            /*
+            foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\", "*.smd", SearchOption.AllDirectories)) {
+                Smd smd = new Smd(path);
+                if(smd.vertCount > 0) {
+                    Console.WriteLine(path);
+                    Console.WriteLine(smd.Print());
+                }
+
+            }
+            */
         }
     }
 }

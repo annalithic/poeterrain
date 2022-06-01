@@ -25,6 +25,6 @@ public class ArmComponent : MonoBehaviour
         bepax = a.bepax;
         bepay = a.bepay;
         apaEntries = a.apaEntries;
-        gameObject.AddComponent<ArmKEntryComponent>().SetData(a.kEntry, entries);
+        gameObject.AddComponent<TileKeyComponent>().SetData(a.kEntry, entries);
     }
 }

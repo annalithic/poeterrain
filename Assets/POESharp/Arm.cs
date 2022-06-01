@@ -66,7 +66,7 @@ namespace POESharp {
                     }
                 }
 
-                doodads = new Doodad[r.ReadLineInt()]; for (int i = 0; i < doodads.Length; i++) doodads[i] = new Doodad(r.ReadLine().Split(' '));
+                //doodads = new Doodad[r.ReadLineInt()]; for (int i = 0; i < doodads.Length; i++) doodads[i] = new Doodad(r.ReadLine().Split(' '));
             }
         }
 

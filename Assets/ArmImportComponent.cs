@@ -144,7 +144,7 @@ public class ArmImportComponent : MonoBehaviour {
 
 
                     //obj.localScale = new Vector3(size * e.sizeX, 1, size * e.sizeY);
-                    ArmKEntryComponent kc = obj.GetComponent<ArmKEntryComponent>();
+                    TileKeyComponent kc = obj.GetComponent<TileKeyComponent>();
                     kc.SetData(e, arm.entries);
                     //string[] entries = new string[e.values.Length];
                     //for(int i = 0; i < entries.Length; i++) {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using POESharp;
 
-public class ArmKEntryComponent : MonoBehaviour
+public class TileKeyComponent : MonoBehaviour
 {
     public int sizeX;
     public int sizeY;
@@ -11,14 +11,14 @@ public class ArmKEntryComponent : MonoBehaviour
     public string edgeTypeRight;
     public string edgeTypeUp;
     public string edgeTypeLeft;
-    public int edgeLengthDown;
-    public int unk2;
-    public int edgeLengthRight;
-    public int unk4;
-    public int edgeLengthUp;
-    public int unk6;
-    public int edgeLengthLeft;
-    public int unk8;
+    public int edgeDistDown;
+    public int edgeDistDown2;
+    public int edgeDistRight;
+    public int edgeDistRight2;
+    public int edgeDistUp;
+    public int edgeDistUp2;
+    public int edgeDistLeft;
+    public int edgeDistLeft2;
     public string groundTypeDownLeft;
     public string groundTypeDownRight;
     public string groundTypeUpRight;
@@ -37,14 +37,14 @@ public class ArmKEntryComponent : MonoBehaviour
         edgeTypeRight = GetName(k.edgeTypeRight, names);
         edgeTypeUp = GetName(k.edgeTypeUp, names);
         edgeTypeLeft = GetName(k.edgeTypeLeft, names);
-        edgeLengthDown = k.edgeLengthDown;
-        unk2 = k.unk2;
-        edgeLengthRight = k.edgeLengthRight;
-        unk4 = k.unk4;
-        edgeLengthUp = k.edgeLengthUp;
-        unk6 = k.unk6;
-        edgeLengthLeft = k.edgeLengthLeft;
-        unk8 = k.unk8;
+        edgeDistDown = k.edgeLengthDown;
+        edgeDistDown2 = k.unk2;
+        edgeDistRight = k.edgeLengthRight;
+        edgeDistRight2 = k.unk4;
+        edgeDistUp = k.edgeLengthUp;
+        edgeDistUp2 = k.unk6;
+        edgeDistLeft = k.edgeLengthLeft;
+        edgeDistLeft2 = k.unk8;
         groundTypeDownLeft = GetName(k.groundTypeDownLeft, names);
         groundTypeDownRight = GetName(k.groundTypeDownRight, names);
         groundTypeUpRight = GetName(k.groundTypeUpRight, names);
