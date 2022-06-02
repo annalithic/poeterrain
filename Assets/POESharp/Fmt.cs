@@ -1,36 +1,43 @@
 ﻿using System;
 using System.IO;
+using POESharp.Util;
 using System.Text;
 
 namespace POESharp {
-    public class Smd : PoeMesh {
+    public class Fmt : PoeMesh {
+        byte version;
+
         public ushort shapeCount;
+        public byte unk;
 
-        public Smd(string path) {
-            using (BinaryReader r = new BinaryReader(File.OpenRead(path))) {
-                byte version = r.ReadByte();
 
-                if (version == 3) {
-                    r.ReadByte();
+
+        public Fmt(string path) {
+            using(BinaryReader r = new BinaryReader(File.OpenRead(path))) {
+                version = r.ReadByte();
+
+                if(version == 9) {
+                    r.Seek(37);
                     shapeCount = r.ReadUInt16();
-                    r.BaseStream.Seek(41, SeekOrigin.Current);
+                    if (shapeCount == 0) return;
+
+                    r.Seek(4);
                     triCount = r.ReadUInt32();
                     vertCount = r.ReadUInt32();
-                    r.BaseStream.Seek(8, SeekOrigin.Current);
-                    r.BaseStream.Seek(8 * shapeCount, SeekOrigin.Current);
+                    r.Seek(8);
+                    r.Seek(shapeCount * 8);
+
                 } else {
                     triCount = r.ReadUInt32();
                     vertCount = r.ReadUInt32();
-                    r.ReadByte();
                     shapeCount = r.ReadUInt16();
-                    int shapeNameLength = r.ReadInt32();
-                    r.BaseStream.Seek(24, SeekOrigin.Current); //bbox
-                    r.BaseStream.Seek(8 * shapeCount, SeekOrigin.Current);
-                    if (version == 2) r.BaseStream.Seek(4, SeekOrigin.Current);
-                    r.BaseStream.Seek(shapeNameLength, SeekOrigin.Current);
+                    unk = r.ReadByte();
+                    r.Seek(3);
+                    r.Seek(24);
+                    if (unk != 0) r.Seek(unk * 6);
+                    if (version == 8) r.Seek(4);
+                    r.Seek(shapeCount * 12);
                 }
-
-
 
 
                 idx = new int[triCount * 3];
@@ -49,10 +56,9 @@ namespace POESharp {
                     x[vert] = r.ReadSingle();
                     y[vert] = r.ReadSingle();
                     z[vert] = r.ReadSingle();
-                    r.BaseStream.Seek(8, SeekOrigin.Current);
+                    r.Seek(8);
                     u[vert] = r.ReadUInt16();
                     v[vert] = r.ReadUInt16();
-                    r.BaseStream.Seek(8, SeekOrigin.Current);
                 }
 
             }
@@ -60,7 +66,7 @@ namespace POESharp {
 
         public string Print() {
             StringBuilder s = new StringBuilder();
-            for(int i = 0; i < 20; i++) {
+            for (int i = 0; i < 10; i++) {
                 if (i >= vertCount) break;
                 s.Append($"{x[i]} {y[i]} {z[i]} - {u[i]} {v[i]}\n");
             }

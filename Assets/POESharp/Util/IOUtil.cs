@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace POESharp.Util {
+
+    public static class IOUtil {
+        public static void Seek(this BinaryReader r, int count) { r.BaseStream.Seek(count, SeekOrigin.Current); }
+    }
+
     public static class TextReaderEx {
         public static int ReadLineInt(this TextReader r) {
             return int.Parse(r.ReadLine());

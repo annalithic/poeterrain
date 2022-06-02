@@ -16,7 +16,10 @@ public class SmImportComponent : MonoBehaviour
     void Update() {
         if(importSMD) {
             importSMD = false;
-            ImportSMD(EditorUtility.OpenFilePanel("Import smd", gameFolder, "smd"));
+            Mesh mesh = ImportSMD(EditorUtility.OpenFilePanel("Import smd", gameFolder, "smd,fmt"));
+            Instantiate(smdPrefab);
+            smdPrefab.name = mesh.name;
+            smdPrefab.GetComponent<MeshFilter>().sharedMesh = mesh;
         }
         if(importAll) {
             importAll = false;
@@ -27,12 +30,13 @@ public class SmImportComponent : MonoBehaviour
     void ImportAll(string folder) {
         int debug = 0;
         AssetDatabase.StartAssetEditing();
-        foreach(string path in Directory.EnumerateFiles(folder, "*.smd", SearchOption.AllDirectories)) {
-            string relative = path.Substring(folder.Length); relative = relative.Replace(".smd", ".mesh");
+        foreach(string path in Directory.EnumerateFiles(folder, "*.fmt", SearchOption.AllDirectories)) {
+            string relative = path.Substring(folder.Length); relative = relative + ".mesh";
             string meshPath = Path.Combine(Application.dataPath, relative);
-            //if (File.Exists(meshPath)) continue;
+            if (File.Exists(meshPath)) continue;
             if (!Directory.Exists(Path.GetDirectoryName(meshPath))) Directory.CreateDirectory(Path.GetDirectoryName(meshPath));
             Mesh mesh = ImportSMD(path);
+            if (mesh == null) continue;
             AssetDatabase.CreateAsset(mesh, Path.Combine("Assets", relative));
             debug++;
             //if (debug > 50) break;
@@ -41,7 +45,8 @@ public class SmImportComponent : MonoBehaviour
     }
 
     Mesh ImportSMD(string path) {
-        Smd smd = new Smd(path);
+        PoeMesh smd = path.EndsWith("smd") ? (PoeMesh) new Smd(path) : (PoeMesh) new Fmt(path);
+        if (smd.triCount == 0 || smd.vertCount == 0) return null;
         Vector3[] verts = new Vector3[smd.vertCount];
         Vector2[] uvs = new Vector2[smd.vertCount];
         for(int i = 0; i < verts.Length; i++) {

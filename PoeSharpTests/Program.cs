@@ -16,6 +16,7 @@ namespace PoeSharpTests {
             //Smd smd = new Smd(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\GoddessOfMalaise\rig_5529a689.smd");
             //Console.WriteLine(smd.Print());
 
+            /*
             int debug = 0;
             string folder = @"E:\Extracted\PathOfExile\3.18.Sentinel\";
             foreach (string path in Directory.EnumerateFiles(folder, "*.smd", SearchOption.AllDirectories)) {
@@ -24,17 +25,24 @@ namespace PoeSharpTests {
                 Console.WriteLine(meshPath);
                 debug++; if (debug > 100) break;
             }
-
-            /*
-            foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\", "*.smd", SearchOption.AllDirectories)) {
-                Smd smd = new Smd(path);
+            */
+            
+            foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\", "*.fmt", SearchOption.AllDirectories)) {
+                Fmt smd = new Fmt(path);
                 if(smd.vertCount > 0) {
                     Console.WriteLine(path);
+                    Console.WriteLine(smd.unk);
                     Console.WriteLine(smd.Print());
                 }
 
             }
-            */
+            
+        }
+
+        static void CopyTextures(string sourcefolder, string destfolder) {
+
         }
     }
+
+
 }
