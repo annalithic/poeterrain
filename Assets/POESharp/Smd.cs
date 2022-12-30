@@ -16,8 +16,8 @@ namespace POESharp {
                     r.BaseStream.Seek(41, SeekOrigin.Current);
                     triCount = r.ReadUInt32();
                     vertCount = r.ReadUInt32();
-                    r.BaseStream.Seek(8, SeekOrigin.Current);
-                    r.BaseStream.Seek(8 * shapeCount, SeekOrigin.Current);
+                    shapeStart = new uint[shapeCount]; shapeLength = new uint[shapeCount];
+                    for (int i = 0; i < shapeCount; i++) { shapeStart[i] = r.ReadUInt32(); shapeLength[i] = r.ReadUInt32(); }
                 } else {
                     triCount = r.ReadUInt32();
                     vertCount = r.ReadUInt32();
@@ -25,7 +25,8 @@ namespace POESharp {
                     shapeCount = r.ReadUInt16();
                     int shapeNameLength = r.ReadInt32();
                     r.BaseStream.Seek(24, SeekOrigin.Current); //bbox
-                    r.BaseStream.Seek(8 * shapeCount, SeekOrigin.Current);
+                    shapeStart = new uint[shapeCount]; shapeLength = new uint[shapeCount];
+                    for (int i = 0; i < shapeCount; i++) { shapeStart[i] = r.ReadUInt32(); shapeLength[i] = r.ReadUInt32(); }
                     if (version == 2) r.BaseStream.Seek(4, SeekOrigin.Current);
                     r.BaseStream.Seek(shapeNameLength, SeekOrigin.Current);
                 }
@@ -53,6 +54,13 @@ namespace POESharp {
                     u[vert] = r.ReadUInt16();
                     v[vert] = r.ReadUInt16();
                     r.BaseStream.Seek(8, SeekOrigin.Current);
+                }
+
+                int[] shapeNameLengths = new int[shapeCount];
+                for (int i = 0; i < shapeCount; i++) shapeNameLengths[i] = r.ReadInt32();
+                shapeNames = new string[shapeCount];
+                for (int i = 0; i < shapeCount; i++) {
+                    shapeNames[i] = Encoding.Unicode.GetString(r.ReadBytes(shapeNameLengths[i]));
                 }
 
             }

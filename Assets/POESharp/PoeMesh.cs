@@ -9,6 +9,10 @@ namespace POESharp {
         public uint triCount;
         public uint vertCount;
 
+        public uint[] shapeStart;
+        public uint[] shapeLength;
+        public string[] shapeNames;
+
         public int[] idx;
         public float[] x;
         public float[] y;

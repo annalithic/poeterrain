@@ -1,10 +1,27 @@
 ﻿using System;
 using POESharp;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PoeSharpTests {
     class Program {
         static void Main(string[] args) {
+
+            foreach(string matPath in Directory.EnumerateFiles(@"F:\Extracted\PathOfExile\ZZZZZZZZZZZZZZZZZZ3.18.Sentinel\Art\Models\Monsters", "*.mat", SearchOption.AllDirectories)) {
+                Console.WriteLine(matPath.Substring(57));
+                string text = File.ReadAllText(matPath, System.Text.Encoding.Unicode);
+                JObject mat = JObject.Parse(text);
+                if(mat["graphinstances"] != null)
+                foreach (var instance in mat["graphinstances"]) {
+                    Console.Write(Path.GetFileNameWithoutExtension(instance["parent"].Value<string>()) + " ");
+                }
+                    
+                Console.WriteLine('\n');
+
+            }
+
+
             //Arm arm = new Arm(@"F:\Extracted\PathOfExile\3.17.Siege\Metadata\Terrain\Dungeon\Rooms\Unique\exit_2b.arm");
             //Console.WriteLine(arm.name);
             //foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.17.Siege\Metadata\Terrain\", "*.*gr", SearchOption.AllDirectories)) {
@@ -25,7 +42,7 @@ namespace PoeSharpTests {
                 Console.WriteLine(meshPath);
                 debug++; if (debug > 100) break;
             }
-            */
+            
             
             foreach(string path in Directory.EnumerateFiles(@"E:\Extracted\PathOfExile\3.18.Sentinel\Art\Models\MONSTERS\", "*.fmt", SearchOption.AllDirectories)) {
                 Fmt smd = new Fmt(path);
@@ -36,7 +53,7 @@ namespace PoeSharpTests {
                 }
 
             }
-            
+            */
         }
 
         static void CopyTextures(string sourcefolder, string destfolder) {

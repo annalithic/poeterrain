@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using POESharp;
+using Newtonsoft.Json;
 
 [ExecuteInEditMode]
 public class SmImportComponent : MonoBehaviour
