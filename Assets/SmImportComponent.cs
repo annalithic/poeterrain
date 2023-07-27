@@ -17,10 +17,11 @@ public class SmImportComponent : MonoBehaviour
     void Update() {
         if(importSMD) {
             importSMD = false;
-            Mesh mesh = ImportSMD(EditorUtility.OpenFilePanel("Import smd", gameFolder, "smd,fmt"));
-            Instantiate(smdPrefab);
-            smdPrefab.name = mesh.name;
-            smdPrefab.GetComponent<MeshFilter>().sharedMesh = mesh;
+            string path = EditorUtility.OpenFilePanel("Import smd", gameFolder, "smd,fmt");
+            Mesh mesh = ImportSMD(path);
+            GameObject newObj = Instantiate(smdPrefab);
+            newObj.name = Path.GetFileNameWithoutExtension(path);
+            newObj.GetComponent<MeshFilter>().sharedMesh = mesh;
         }
         if(importAll) {
             importAll = false;

@@ -10,6 +10,8 @@ namespace poe2obj {
         static string file3 = @"F:\Extracted\PathOfExile\3.20.Sanctum\ROOT\Art\Models\Terrain\Jungle\Tiles\VaalInterior\VaalGenerator\rig_e305e0b1.smd";
 
         static void Main(string[] args) {
+            Smd2Obj(@"F:\Extracted\PathOfExile\a\art\models\terrain\hideout\exilecon23hideout\beast\rig_d72085cf.smd"); return;
+
             Smd2Obj(file1);
             Smd2Obj(file2);
             Smd2Obj(file3);
