@@ -10,24 +10,21 @@ public class JankBoneComponent : MonoBehaviour
     public Quaternion[] rotations;
     public float time;
 
-    private void Update() {
+    private void Update() { 
         time = time + (Time.deltaTime * 30);
+        if (time >= positionTimes[positionTimes.Length - 1]) time -= positionTimes[positionTimes.Length - 1];
         int position = 0;
         for(int i = 0; i < positionTimes.Length; i++) {
-            if (positionTimes[i] > time) break;
+            if (positionTimes[i + 1] > time) break; //if next frame is upcoming break
             position++;
         }
-        if(position == positionTimes.Length) {
-            position = 0;
-            time = 0;
-        }
-        transform.localPosition = positions[position];
+        transform.localPosition =  Vector3.Lerp(positions[position], positions[position+1], (time - positionTimes[position]) / (positionTimes[position + 1] - positionTimes[position]));
 
         int rotation = 0;
         for (int i = 0; i < rotationTimes.Length; i++) {
-            if (rotationTimes[i] > time) break;
+            if (rotationTimes[i + 1] > time) break;
             rotation++;
         }
-        transform.localRotation = rotations[rotation];
+        transform.localRotation = Quaternion.Lerp(rotations[rotation], rotations[rotation + 1], (time - rotationTimes[rotation]) / (rotationTimes[rotation + 1] - rotationTimes[rotation])) ;
     }
 }
