@@ -31,58 +31,46 @@ public class SmImportComponent : MonoBehaviour
         }
         if(test) {
             test = false;
-            Ast ast = new Ast(@"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Animations\rig.ast");
-            for(int i = 0; i < ast.animations.Length; i++) {
-                Test(ast, i, Vector3.right * 200 * i);
+            string smdPath = EditorUtility.OpenFilePanel("Import smd", @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS", "smd");
+            string astPath = EditorUtility.OpenFilePanel("Import ast", Path.GetDirectoryName(smdPath), "ast");
+            Debug.Log(smdPath + " | " + astPath);
+            Mesh smd = ImportSMD(smdPath);
+            Debug.Log(smd.vertices.Length);
+            Ast ast = new Ast(astPath);
+            Debug.Log(ast.animations.Length);
+
+            //Ast ast = new Ast(@"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Animations\rig.ast");
+
+            for (int i = 0; i < ast.animations.Length; i++) {
+                Test(smd, ast, i, Vector3.right * 200 * i);
             }
         }
     }
 
-    void Test(Ast ast, int animation, Vector3 pos) {
+    void Test(Mesh mesh, Ast ast, int animation, Vector3 pos) {
 
         //Matrix4x4 testMat = Matrix4x4.Translate(new Vector3(1, 2, 3));
         //Debug.Log($"{testMat.m00} {testMat.m10} {testMat.m20} {testMat.m30} | {testMat.m01} {testMat.m11} {testMat.m21} {testMat.m31} | {testMat.m02} {testMat.m12} {testMat.m22} {testMat.m32} | {testMat.m03} {testMat.m13} {testMat.m23} {testMat.m33}");
         //return;
 
-        
-        string smdPath = @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Anchorman_armour_c18cc675.smd";
+        //string smdPath = @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Anchorman_armour_c18cc675.smd";
+        //string smdPath = @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\MortarSquid\rig_99b74fee.smd";
 
-        Mesh mesh = ImportSMD(smdPath);
 
         Transform[] bones = new Transform[ast.bones.Length];
-        Matrix4x4[] bindPoses = new Matrix4x4[ast.bones.Length];
 
-        GameObject newObj = new GameObject(Path.GetFileNameWithoutExtension(smdPath));
+
+        GameObject newObj = new GameObject(ast.animations[animation].name);
 
         ImportBone(bones, ast, 0, animation, newObj.transform);
-
-        for (int i = 0; i < bones.Length; i++) {
-            bindPoses[i] = bones[i].worldToLocalMatrix;
-            /*
-            bindPoses[i] = new Matrix4x4() { 
-                m00 = ast.bones[i].transform[0],
-                m10 = ast.bones[i].transform[1],
-                m20 = ast.bones[i].transform[2],
-                m30 = ast.bones[i].transform[3],
-                m01 = ast.bones[i].transform[4],
-                m11 = ast.bones[i].transform[5],
-                m21 = ast.bones[i].transform[6],
-                m31 = ast.bones[i].transform[7],
-                m02 = ast.bones[i].transform[8],
-                m12 = ast.bones[i].transform[9],
-                m22 = ast.bones[i].transform[10],
-                m32 = ast.bones[i].transform[11],
-                m03 = ast.bones[i].transform[12],
-                m13 = ast.bones[i].transform[13],
-                m23 = ast.bones[i].transform[14],
-                m33 = ast.bones[i].transform[15]
-            };
-            */
+        if (mesh.bindposes == null || mesh.bindposes.Length == 0) {
+            Matrix4x4[] bindPoses = new Matrix4x4[ast.bones.Length];
+            for (int i = 0; i < bones.Length; i++) {
+                bindPoses[i] = bones[i].worldToLocalMatrix;
+            }
+            mesh.bindposes = bindPoses;
         }
 
-
-
-        mesh.bindposes = bindPoses;
 
         SkinnedMeshRenderer renderer = newObj.AddComponent<SkinnedMeshRenderer>();
         Material mat = Resources.Load<Material>("0");
@@ -197,8 +185,8 @@ public class SmImportComponent : MonoBehaviour
         int[] tris = new int[poeMesh.idx.Length];
         for(int i = 0; i < poeMesh.idx.Length; i+= 3) {
             tris[i] = poeMesh.idx[i];
-            tris[i + 1] = poeMesh.idx[i + 2];
-            tris[i + 2] = poeMesh.idx[i + 1];
+            tris[i + 1] = poeMesh.idx[i + 1];
+            tris[i + 2] = poeMesh.idx[i + 2];
         }
 
         Mesh mesh = new Mesh();
