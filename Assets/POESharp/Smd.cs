@@ -3,8 +3,26 @@ using System.IO;
 using System.Text;
 
 namespace POESharp {
+
+
+    public class BoneWeightSortable : IComparable<BoneWeightSortable> {
+        public byte id;
+        public byte weight;
+
+        public BoneWeightSortable(byte b) {
+            id = b;
+        }
+        public int CompareTo(BoneWeightSortable other) {
+            if (other.weight > weight) return 1;
+            if (other.weight < weight) return -1;
+            return 0;
+        }
+    }
+
     public class Smd : PoeMesh {
         public ushort shapeCount;
+
+        public BoneWeightSortable[][] boneWeights;
 
         public Smd(string path) {
             using (BinaryReader r = new BinaryReader(File.OpenRead(path))) {
@@ -46,6 +64,10 @@ namespace POESharp {
                 z = new float[vertCount];
                 u = new ushort[vertCount];
                 v = new ushort[vertCount];
+
+                boneWeights = new BoneWeightSortable[vertCount][];
+
+
                 for (int vert = 0; vert < vertCount; vert++) {
                     x[vert] = r.ReadSingle();
                     y[vert] = r.ReadSingle();
@@ -53,8 +75,15 @@ namespace POESharp {
                     r.BaseStream.Seek(8, SeekOrigin.Current);
                     u[vert] = r.ReadUInt16();
                     v[vert] = r.ReadUInt16();
-                    r.BaseStream.Seek(8, SeekOrigin.Current);
+                    boneWeights[vert] = new BoneWeightSortable[4];
+                    for(int weight = 0; weight < 4; weight++) {
+                        boneWeights[vert][weight] = new BoneWeightSortable(r.ReadByte());
+                    }
+                    for (int weight = 0; weight < 4; weight++) {
+                        boneWeights[vert][weight].weight = r.ReadByte();
+                    }
                 }
+
 
                 int[] shapeNameLengths = new int[shapeCount];
                 for (int i = 0; i < shapeCount; i++) shapeNameLengths[i] = r.ReadInt32();

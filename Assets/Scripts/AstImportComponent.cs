@@ -21,7 +21,7 @@ public class AstImportComponent : MonoBehaviour
     {
         if(import) {
             import = false;
-            ImportAst(EditorUtility.OpenFilePanel("Import Ast", @"F:\Extracted\PathOfExile\3.20.Sanctum\ROOT\Art\Models\MONSTERS", "ast"));
+            ImportAst(EditorUtility.OpenFilePanel("Import Ast", @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS", "ast"));
         }
     }
 
@@ -31,12 +31,15 @@ public class AstImportComponent : MonoBehaviour
         //    Transform root = ImportBone(ast, 0, i);
         //    root.Rotate(90, 0, 0);
         //}
+        Transform astRoot = new GameObject("AST").transform;
         for (int i = 0; i < ast.animations.Length; i++) {
             Transform modelRoot = new GameObject(ast.animations[i].name).transform;
+            modelRoot.SetParent(astRoot);
             Transform root = ImportBone(ast, 0, i);
             root.SetParent(modelRoot);
             modelRoot.Rotate(90, 0, 0);
-            modelRoot.Translate(Vector3.right * 100 * i);
+            modelRoot.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            modelRoot.Translate(Vector3.right * 20 * i);
         }
     }
 
