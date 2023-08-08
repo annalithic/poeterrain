@@ -174,20 +174,23 @@ public class SmImportComponent : MonoBehaviour
     }
 
     Mesh ImportSMD(string path) {
-        PoeMesh poeMesh = path.EndsWith("smd") ? (PoeMesh) new Smd(path) : (PoeMesh) new Fmt(path);
-        if (poeMesh.triCount == 0 || poeMesh.vertCount == 0) return null;
-        Vector3[] verts = new Vector3[poeMesh.vertCount];
-        Vector2[] uvs = new Vector2[poeMesh.vertCount];
-        for(int i = 0; i < verts.Length; i++) {
-            verts[i] = new Vector3(poeMesh.x[i], poeMesh.y[i], poeMesh.z[i]);
-            uvs[i] = new Vector2(Mathf.HalfToFloat(poeMesh.u[i]), Mathf.HalfToFloat(poeMesh.v[i]));
+        Smd smd = new Smd(path);
+        if (smd.model.meshes[0].idx.Length == 0 || smd.model.meshes[0].vertCount == 0) return null;
+        Vector3[] verts = new Vector3[smd.model.meshes[0].vertCount];
+        for (int i = 0; i < verts.Length; i++) {
+            verts[i] = new Vector3(smd.model.meshes[0].verts[i*3], smd.model.meshes[0].verts[i*3+1], smd.model.meshes[0].verts[i*3+2]);
         }
-        int[] tris = new int[poeMesh.idx.Length];
-        for(int i = 0; i < poeMesh.idx.Length; i+= 3) {
-            tris[i] = poeMesh.idx[i];
-            tris[i + 1] = poeMesh.idx[i + 1];
-            tris[i + 2] = poeMesh.idx[i + 2];
+
+
+        Vector2[] uvs = new Vector2[smd.model.meshes[0].vertCount];
+        for (int i = 0; i < uvs.Length; i++) {
+            uvs[i] = new Vector2(Mathf.HalfToFloat(smd.model.meshes[0].uvs[i*2]), Mathf.HalfToFloat(smd.model.meshes[0].uvs[i*2+1]));
         }
+
+
+        int[] tris = new int[smd.model.meshes[0].idx.Length];
+        System.Array.Copy(smd.model.meshes[0].idx, tris, tris.Length);
+
 
         Mesh mesh = new Mesh();
         mesh.vertices = verts;
@@ -195,25 +198,23 @@ public class SmImportComponent : MonoBehaviour
         mesh.triangles = tris;
         mesh.RecalculateNormals();
 
-        if(path.EndsWith(".smd")) {
-            Smd smd = (Smd)poeMesh;
-            BoneWeight[] weights = new BoneWeight[poeMesh.vertCount];
-            for (int i = 0; i < weights.Length; i++) {
-                System.Array.Sort(smd.boneWeights[i]);
-                //if (i < 100) Debug.Log($"{smd.boneWeights[i][0].weight} | {smd.boneWeights[i][1].weight} | {smd.boneWeights[i][2].weight} | {smd.boneWeights[i][2].weight}  -  {smd.boneWeights[i][0].id} | {smd.boneWeights[i][1].id} | {smd.boneWeights[i][2].id} | {smd.boneWeights[i][3].id}");
-                weights[i] = new BoneWeight() {
-                    boneIndex0 = smd.boneWeights[i][0].id,
-                    boneIndex1 = smd.boneWeights[i][1].id,
-                    boneIndex2 = smd.boneWeights[i][2].id,
-                    boneIndex3 = smd.boneWeights[i][3].id,
-                    weight0 = smd.boneWeights[i][0].weight / 255f,
-                    weight1 = smd.boneWeights[i][1].weight / 255f,
-                    weight2 = smd.boneWeights[i][2].weight / 255f,
-                    weight3 = smd.boneWeights[i][3].weight / 255f
-                };
-            }
-            mesh.boneWeights = weights;
+        BoneWeight[] weights = new BoneWeight[smd.model.meshes[0].vertCount];
+        for (int i = 0; i < weights.Length; i++) {
+            System.Array.Sort(smd.model.meshes[0].boneWeights[i]);
+            //if (i < 100) Debug.Log($"{smd.boneWeights[i][0].weight} | {smd.boneWeights[i][1].weight} | {smd.boneWeights[i][2].weight} | {smd.boneWeights[i][2].weight}  -  {smd.boneWeights[i][0].id} | {smd.boneWeights[i][1].id} | {smd.boneWeights[i][2].id} | {smd.boneWeights[i][3].id}");
+            weights[i] = new BoneWeight() {
+                boneIndex0 = smd.model.meshes[0].boneWeights[i][0].id,
+                boneIndex1 = smd.model.meshes[0].boneWeights[i][1].id,
+                boneIndex2 = smd.model.meshes[0].boneWeights[i][2].id,
+                boneIndex3 = smd.model.meshes[0].boneWeights[i][3].id,
+                weight0 = smd.model.meshes[0].boneWeights[i][0].weight / 255f,
+                weight1 = smd.model.meshes[0].boneWeights[i][1].weight / 255f,
+                weight2 = smd.model.meshes[0].boneWeights[i][2].weight / 255f,
+                weight3 = smd.model.meshes[0].boneWeights[i][3].weight / 255f
+            };
         }
+        mesh.boneWeights = weights;
+        
 
 
 

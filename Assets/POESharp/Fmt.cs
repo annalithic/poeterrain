@@ -4,7 +4,7 @@ using POESharp.Util;
 using System.Text;
 
 namespace POESharp {
-    public class Fmt : PoeMesh {
+    public class Fmt : PoeMeshOld {
         byte version;
 
         public ushort shapeCount;

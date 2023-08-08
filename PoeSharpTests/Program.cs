@@ -8,6 +8,11 @@ namespace PoeSharpTests {
     class Program {
         static void Main(string[] args) {
 
+            Smd smd = new Smd(@"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Anchorman_armour_c18cc675.smd");
+
+            Console.WriteLine("test"); return;
+
+
             foreach(string matPath in Directory.EnumerateFiles(@"F:\Extracted\PathOfExile\ZZZZZZZZZZZZZZZZZZ3.18.Sentinel\Art\Models\Monsters", "*.mat", SearchOption.AllDirectories)) {
                 Console.WriteLine(matPath.Substring(57));
                 string text = File.ReadAllText(matPath, System.Text.Encoding.Unicode);

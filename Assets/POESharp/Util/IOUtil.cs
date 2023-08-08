@@ -6,6 +6,12 @@ namespace POESharp.Util {
 
     public static class IOUtil {
         public static void Seek(this BinaryReader r, int count) { r.BaseStream.Seek(count, SeekOrigin.Current); }
+
+        public static float[] ReadBBox(this BinaryReader r) {
+            float[] bbox = new float[6];
+            for (int i = 0; i < bbox.Length; i++) bbox[i] = r.ReadSingle();
+            return bbox;
+        }
     }
 
     public static class TextReaderEx {
