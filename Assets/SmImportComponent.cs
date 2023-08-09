@@ -11,10 +11,12 @@ using PoeTerrain;
 public class SmImportComponent : MonoBehaviour
 {
     public GameObject smdPrefab;
-    public string gameFolder = @"E:\Extracted\PathOfExile\3.18.Sentinel\";
+    public string gameFolder = @"E:\Extracted\PathOfExile\3.21.Crucible";
     public bool importSMD;
-    public bool importAll;
+    public bool importFMT;
+    //public bool importAll;
     public bool test;
+    public bool importAOC;
 
     void Update() {
         if(importSMD) {
@@ -25,29 +27,55 @@ public class SmImportComponent : MonoBehaviour
             newObj.name = Path.GetFileNameWithoutExtension(path);
             newObj.GetComponent<MeshFilter>().sharedMesh = mesh;
         }
-        if(importAll) {
-            importAll = false;
-            ImportAll(gameFolder);
+        if(importFMT) {
+            importFMT = false;
+            string path = EditorUtility.OpenFilePanel("Import smd", @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS", "fmt");
+            Mesh mesh = ImportFMT(path);
+            GameObject newObj = Instantiate(smdPrefab);
+            newObj.name = Path.GetFileNameWithoutExtension(path);
+            newObj.GetComponent<MeshFilter>().sharedMesh = mesh;
+            newObj.transform.Rotate(new Vector3(90, 0, 0));
         }
-        if(test) {
+        //if(importAll) {
+        //    importAll = false;
+        //    ImportAll(gameFolder);
+        //}
+        if (test) {
             test = false;
             string smdPath = EditorUtility.OpenFilePanel("Import smd", @"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS", "smd");
             string astPath = EditorUtility.OpenFilePanel("Import ast", Path.GetDirectoryName(smdPath), "ast");
             Debug.Log(smdPath + " | " + astPath);
-            Mesh smd = ImportSMD(smdPath);
-            Debug.Log(smd.vertices.Length);
-            Ast ast = new Ast(astPath);
-            Debug.Log(ast.animations.Length);
-
-            //Ast ast = new Ast(@"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Animations\rig.ast");
-
-            for (int i = 0; i < ast.animations.Length; i++) {
-                Test(smd, ast, i, Vector3.right * 200 * i);
-            }
+            TestSMDAST(smdPath, astPath, smdPath.Substring(gameFolder.Length));
         }
+        if(importAOC) {
+            importAOC = false;
+            string aocPath = EditorUtility.OpenFilePanel("Import aoc", Path.Combine(gameFolder, "metadata/monsters"), "aoc");
+            Aoc aoc = new Aoc(aocPath);
+            string astPath = Path.Combine(gameFolder, aoc.skeleton);
+            Sm sm = new Sm(Path.Combine(gameFolder, aoc.skin));
+            string smdPath = Path.Combine(gameFolder, sm.smd);
+            TestSMDAST(smdPath, astPath, Path.GetFileName(aocPath));
+
+        }
+
     }
 
-    void Test(Mesh mesh, Ast ast, int animation, Vector3 pos) {
+    void TestSMDAST(string smdPath, string astPath, string name) {
+        Transform parent = new GameObject(name).transform;
+        Mesh smd = ImportSMD(smdPath);
+        Debug.Log(smd.vertices.Length);
+        Ast ast = new Ast(astPath);
+        Debug.Log(ast.animations.Length);
+
+        //Ast ast = new Ast(@"E:\Extracted\PathOfExile\3.21.Crucible\Art\Models\MONSTERS\Anchorman\Animations\rig.ast");
+
+        for (int i = 0; i < ast.animations.Length; i++) {
+            Test(smd, ast, i, Vector3.right * 200 * i, parent);
+        }
+
+    }
+
+    void Test(Mesh mesh, Ast ast, int animation, Vector3 pos, Transform parent) {
 
         //Matrix4x4 testMat = Matrix4x4.Translate(new Vector3(1, 2, 3));
         //Debug.Log($"{testMat.m00} {testMat.m10} {testMat.m20} {testMat.m30} | {testMat.m01} {testMat.m11} {testMat.m21} {testMat.m31} | {testMat.m02} {testMat.m12} {testMat.m22} {testMat.m32} | {testMat.m03} {testMat.m13} {testMat.m23} {testMat.m33}");
@@ -82,6 +110,7 @@ public class SmImportComponent : MonoBehaviour
 
         newObj.transform.Translate(pos);
         newObj.transform.Rotate(new Vector3(90, 0, 0));
+        newObj.transform.SetParent(parent);
     }
 
     Vector3 TranslationFromMatrix(float[] transform) {
@@ -214,9 +243,39 @@ public class SmImportComponent : MonoBehaviour
             };
         }
         mesh.boneWeights = weights;
-        
+        mesh.name = Path.GetFileName(path);
 
 
+
+        return mesh;
+
+        //GameObject o = Instantiate(smdPrefab);
+        //o.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        //o.GetComponent<MeshFilter>().sharedMesh = mesh;
+        //return o;
+    }
+
+    Mesh ImportFMT(string path) {
+        Fmt fmt = new Fmt(path);
+        if (fmt.triCount == 0 || fmt.vertCount == 0) return null;
+        Vector3[] verts = new Vector3[fmt.vertCount];
+        Vector2[] uvs = new Vector2[fmt.vertCount];
+        for (int i = 0; i < verts.Length; i++) {
+            verts[i] = new Vector3(fmt.x[i] / 100, fmt.z[i] / -100, fmt.y[i] / -100);
+            uvs[i] = new Vector2(Mathf.HalfToFloat(fmt.u[i]), Mathf.HalfToFloat(fmt.v[i]));
+        }
+        int[] tris = new int[fmt.idx.Length];
+        for (int i = 0; i < fmt.idx.Length; i += 3) {
+            tris[i] = fmt.idx[i];
+            tris[i + 1] = fmt.idx[i + 2];
+            tris[i + 2] = fmt.idx[i + 1];
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = verts;
+        mesh.uv = uvs;
+        mesh.triangles = tris;
+        mesh.RecalculateNormals();
 
         return mesh;
 

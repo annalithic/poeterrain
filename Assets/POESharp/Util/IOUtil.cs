@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System;
 
 namespace POESharp.Util {
 
@@ -22,10 +23,35 @@ namespace POESharp.Util {
             return r.ReadLine().Trim('\"');
         }
 
+        public static int ReadValueInt(this TextReader r, string assertVal) {
+            string[] words = r.ReadLine().Trim().Split();
+            if (words[0] != assertVal)
+                Console.WriteLine($"ASSERTION FAILED [{words[0]}] != [{assertVal}]");
+            return int.Parse(words[words.Length - 1]);
+        }
+
+
         public static void ReadLineInt(this TextReader r, out int a, out int b) {
             string[] words = r.ReadLine().Split(' ');
             a = int.Parse(words[0]); b = int.Parse(words[1]);
         }
+
+        public static string ReadValueString(this TextReader r, string assertVal) {
+            var words = r.ReadLine().Trim().SplitQuotes();
+            if (words[0] != assertVal) Console.WriteLine($"ASSERTION FAILED {words[0]} != {assertVal}");
+            return words[words.Length - 1].Trim('"');
+        }
+
+        public static float[] ReadValueBbox(this TextReader r, string assertVal) {
+            var words = r.ReadLine().Trim().Split();
+            if (words[0] != assertVal) Console.WriteLine($"ASSERTION FAILED {words[0]} != {assertVal}");
+            float[] bbox = new float[6];
+            for (int i = 0; i < bbox.Length; i++) bbox[i] = float.Parse(words[i + 1]);
+            return bbox;
+        }
+
+
+
 
         public static string[] SplitQuotes(this string s) {
             List<string> newWords = new List<string>();
